@@ -1,0 +1,3 @@
+[submodule "face_recognition_protos"]
+	path = face_recognition_protos
+	url = https://github.com/ruziba3vich/face_recognition_protos.git
