@@ -61,7 +61,51 @@ func (h *FaceRecognitionHandler) HandleImageEmbedding(c *gin.Context) {
 }
 
 type UserHandler struct {
-	service *service.Service
+	service            *service.Service
+	faceEmbedderClient face_recognition_service.FaceEmbedderClient
+	logger             *lgg.Logger
+}
+
+func (h *UserHandler) HandleImageEmbedding(c *gin.Context) {
+	file, _, err := c.Request.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "image file is required"})
+		return
+	}
+	defer file.Close()
+
+	imageData, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read image"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objectID := c.Query("object_id")
+	if len(objectID) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "object_id is not provided"})
+		return
+	}
+
+	resp, err := h.faceEmbedderClient.GetEmbedding(ctx, &face_recognition_service.ImageRequest{Image: imageData})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("gRPC error: %v", err)})
+		return
+	}
+
+	if resp.Error != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": resp.Error})
+		return
+	}
+
+	if err := h.service.StoreVector(ctx, objectID, resp.Embedding); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"response": "successfully stored"})
 }
 
 func NewUserHandler(service *service.Service) *UserHandler {
