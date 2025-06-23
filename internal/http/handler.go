@@ -108,8 +108,12 @@ func (h *UserHandler) HandleImageEmbedding(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"response": "successfully stored"})
 }
 
-func NewUserHandler(service *service.Service) *UserHandler {
-	return &UserHandler{service: service}
+func NewUserHandler(service *service.Service, faceEmbedderClient face_recognition_service.FaceEmbedderClient, logger *lgg.Logger) *UserHandler {
+	return &UserHandler{
+		service:            service,
+		faceEmbedderClient: faceEmbedderClient,
+		logger:             logger,
+	}
 }
 
 func (h *UserHandler) CreateUser(c *gin.Context) {
