@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ruziba3vich/face_embedding_gateway/genprotos/face_recognition_service"
 	handler "github.com/ruziba3vich/face_embedding_gateway/internal/http"
+	"github.com/ruziba3vich/face_embedding_gateway/internal/service"
 	lgg "github.com/ruziba3vich/prodonik_lgger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,10 +26,13 @@ func main() {
 
 	client := face_recognition_service.NewFaceEmbedderClient(clientConn)
 
-	handler := handler.NewFaceRecognitionHandler(client, logger)
+	faceRecognitionHandler := handler.NewFaceRecognitionHandler(client, logger)
+
+	userService := service.NewService(client, )
+	userHandler := handler.NewUserHandler()
 
 	router := gin.Default()
-	router.POST("/embedd", handler.HandleImageEmbedding)
+	router.POST("/embedd", faceRecognitionHandler.HandleImageEmbedding)
 
 	if err := router.Run(":7777"); err != nil {
 		logger.Fatal(err)

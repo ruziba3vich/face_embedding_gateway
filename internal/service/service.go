@@ -7,24 +7,21 @@ import (
 
 	"github.com/milvus-io/milvus-sdk-go/v2/client"
 	"github.com/milvus-io/milvus-sdk-go/v2/entity"
-	"github.com/ruziba3vich/face_embedding_gateway/genprotos/face_recognition_service"
 	"github.com/ruziba3vich/face_embedding_gateway/internal/models"
 	"gorm.io/gorm"
 )
 
 type (
 	Service struct {
-		milvusClient       client.Client
-		faceEmbedderClient face_recognition_service.FaceEmbedderClient
-		db                 *gorm.DB
+		milvusClient client.Client
+		db           *gorm.DB
 	}
 )
 
-func NewService(faceEmbedderClient face_recognition_service.FaceEmbedderClient, db *gorm.DB, milvusClient client.Client) *Service {
+func NewService(db *gorm.DB, milvusClient client.Client) *Service {
 	return &Service{
-		db:                 db,
-		faceEmbedderClient: faceEmbedderClient,
-		milvusClient:       milvusClient,
+		db:           db,
+		milvusClient: milvusClient,
 	}
 }
 
